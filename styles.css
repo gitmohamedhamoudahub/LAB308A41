@@ -77,3 +77,27 @@ body {
     height: 17em;
   }
 }
+
+
+
+
+.breedName{
+  background-color: burlywood;
+  font-weight: bolder;
+  border-top: 0px solid black;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  padding: 5px;;
+}
+.breedOrigin{
+  background-color:  bisque;
+  padding: 5px;
+  color: brown;
+} 
+.breedDescription{
+  background-color: white;
+  border-top: 0px solid black;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  padding: 5px;
+}
