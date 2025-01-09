@@ -1,5 +1,13 @@
-import * as Carousel from "./Carousel.js";
-import axios from "axios";
+//import * as Carousel from "./Carousel.js";
+//import axios from "axios";
+
+//**************************************** */
+const breedName = document.querySelector(".breedName");
+const breedOrigin = document.querySelector(".breedOrigin");
+const breedDescription = document.querySelector(".breedDescription");
+
+//**************************************** */
+
 
 // The breed selection input element.
 const breedSelect = document.getElementById("breedSelect");
@@ -11,8 +19,79 @@ const progressBar = document.getElementById("progressBar");
 const getFavouritesBtn = document.getElementById("getFavouritesBtn");
 
 // Step 0: Store your API key here for reference and easy access.
-const API_KEY = "";
+const API_KEY = "live_q8HmQ0SZvNU87ZUOLH7qpCZUaeuvuugpwoDE6FOWYId8ivtt2FoSlFClXrQzT1XB";
+//***************************************************************** */
+async function initialLoad(){
+  console.log("initialLoad...");
+  
+  const breedData = await getAPIBreedsList();
+  let option = document.createElement("option");
+  option.value = -1;
+  option.text = '';    
+  breedSelect.appendChild(option);
 
+  for(let i=0 ; i< breedData.length ; i++)
+    {
+      
+      let option = document.createElement("option");
+      option.value = breedData[i].id;
+      option.text = breedData[i].name;    
+      breedSelect.appendChild(option);
+      
+      
+    } 
+    console.log("Breed Select Element:", breedSelect);
+    
+}
+
+
+
+breedSelect.addEventListener("change",(event) =>{
+  getAPIBreedByID(breedSelect.value).then(breed =>{
+
+  console.log(breed);
+  console.log(breed.name);
+  if(breed.length > 0){
+      createInformationDump(breed[0].name,breed[0].origin,breed[0].description);
+      addCarousel(breed[0].image.url,breed[0].name,breed[0].image.id);
+  }
+  else
+  {
+    alert("There is no information about " + breedSelect.value + ".");
+  }
+  
+})
+
+});
+window.addEventListener("load", initialLoad);
+
+
+async function getAPIBreedsList(){
+  
+  const url = `https://api.thecatapi.com/v1/breeds?limit=100&api_key=${API_KEY}`;
+  console.log(url);
+  try{
+
+        const response = await fetch(url);
+        if(response.ok === true)
+          {
+            const data = await response.json();
+             
+ 
+          return data;
+          }
+          else
+          {
+            console.log("Error: ", response.status);
+            return;
+          }
+
+          }
+          catch(err){
+            console.log(err);
+
+ }
+ }
 /**
  * 1. Create an async function "initialLoad" that does the following:
  * - Retrieve a list of breeds from the cat API using fetch().
