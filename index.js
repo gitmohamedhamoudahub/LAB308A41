@@ -93,11 +93,8 @@ async function getAPIBreedsList(){
  }
  }
 
- sync function getAPIBreedByID(breedID){
+ async function getAPIBreedByID(breedID){
   console.log(breedID);
-  //https://api.thecatapi.com/v1/breeds/search?q=abys&attach_image=1
-  //https://api.thecatapi.com/v1/breeds/search?q=abys&attach_image=1
-  // const url = `https://api.thecatapi.com/v1/breeds/${breedID}?api_key=${API_KEY}`;
   const url = `https://api.thecatapi.com/v1/breeds/search?q=${breedID}&attach_image=1&api_key=${API_KEY}`;
   console.log("breed => " + url);
   try{
@@ -122,7 +119,13 @@ async function getAPIBreedsList(){
  }
  }
 
- 
+ function addCarousel(imgSrc, imgAlt, imgId){
+  Carousel.clear();
+      let carouselItem = Carousel.createCarouselItem(imgSrc, imgAlt, imgId);
+      console.log(carouselItem);
+      let newCarousel = Carousel.appendCarousel(carouselItem);
+
+}
 /**
  * 1. Create an async function "initialLoad" that does the following:
  * - Retrieve a list of breeds from the cat API using fetch().
