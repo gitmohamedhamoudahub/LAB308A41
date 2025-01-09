@@ -1,4 +1,4 @@
-//import * as Carousel from "./Carousel.js";
+import * as Carousel from "./Carousel.js";
 //import axios from "axios";
 
 //**************************************** */
@@ -21,6 +21,9 @@ const getFavouritesBtn = document.getElementById("getFavouritesBtn");
 // Step 0: Store your API key here for reference and easy access.
 const API_KEY = "live_q8HmQ0SZvNU87ZUOLH7qpCZUaeuvuugpwoDE6FOWYId8ivtt2FoSlFClXrQzT1XB";
 //***************************************************************** */
+
+window.addEventListener("load", initialLoad);
+
 async function initialLoad(){
   console.log("initialLoad...");
   
@@ -63,7 +66,7 @@ breedSelect.addEventListener("change",(event) =>{
 })
 
 });
-window.addEventListener("load", initialLoad);
+
 
 
 async function getAPIBreedsList(){
@@ -75,10 +78,8 @@ async function getAPIBreedsList(){
         const response = await fetch(url);
         if(response.ok === true)
           {
-            const data = await response.json();
-             
- 
-          return data;
+            const data = await response.json();             
+            return data;
           }
           else
           {
@@ -125,6 +126,29 @@ async function getAPIBreedsList(){
       console.log(carouselItem);
       let newCarousel = Carousel.appendCarousel(carouselItem);
 
+}
+
+function createInformationDump(name, origin, desc){
+
+
+  // Clear the previous information.
+  infoDump.innerHTML = "";
+  
+  // Create a new paragraph for each piece of information.
+  const breedNameTxt = document.createElement("div");
+  breedNameTxt.classList.add("breedName");
+  breedNameTxt.textContent = `Breed: ${name}`;
+  infoDump.appendChild(breedNameTxt);
+  
+  const breedOriginTxt = document.createElement("div");
+  breedOriginTxt.classList.add("breedOrigin");
+  breedOriginTxt.textContent = `Origin: ${origin}`;
+  infoDump.appendChild(breedOriginTxt);
+  
+  const breedDescriptionTxt = document.createElement("p");
+  breedDescriptionTxt.classList.add("breedDescription");
+  breedDescriptionTxt.textContent = `Description: ${desc}`;
+  infoDump.appendChild(breedDescriptionTxt);
 }
 /**
  * 1. Create an async function "initialLoad" that does the following:
