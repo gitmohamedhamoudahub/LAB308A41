@@ -61,6 +61,7 @@ function updateProgress(event) {
   console.log(event); 
   if (event.lengthComputable) {
       const percentCompleted = (event.loaded / event.total) * 100;
+      console.log(`Percent Completed: ${percentCompleted}`);
       progressBar.style.width = `${percentCompleted}%`;
   }
 }
@@ -227,7 +228,6 @@ function createInformationDump(name, origin, desc){
 getFavouritesBtn.addEventListener("click",()=> { 
   const breedData = getFavoritesBtn();
   console.log('Favorite Breed' + breedData);
-  //const x =  fillBreedList()
 }
 );
 
@@ -255,13 +255,11 @@ async function addToFavorite(imageID,subID){
 async function getFavoritesBtn(){
   console.log('Get Favorites Images');
   try {
-    //axiosInitiation();
     const res = await axios.get(`/favourites`,
        {headers :{
                     'Content-Type': 'application/json',
                     'x-api-key': API_KEY
                   }
-
       }
     );
     const data = res.data;
