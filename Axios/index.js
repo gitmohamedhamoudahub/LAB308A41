@@ -1,3 +1,5 @@
+// https://api.thecatapi.com/v1/images/search?breed_ids=${breedId}&limit=6
+
 import * as Carousel from "./Carousel.js";
 //import axios from "axios";
 
@@ -20,48 +22,104 @@ const getFavouritesBtn = document.getElementById("getFavouritesBtn");
 
 // Step 0: Store your API key here for reference and easy access.
 const API_KEY = "live_q8HmQ0SZvNU87ZUOLH7qpCZUaeuvuugpwoDE6FOWYId8ivtt2FoSlFClXrQzT1XB";
+const API_BASE_URL = 'https://api.thecatapi.com/v1';
 //***************************************************************** */
 
 window.addEventListener("load", initialLoad);
 
 async function initialLoad(){
-  console.log("initialLoad...");
-  
+  console.log("Axios initialLoad...");  
+  axiosInitiation();  
   const breedData = await getAPIBreedsList();
+  fillBreedList(breedData);
+}
+
+async function fillBreedList(breedData){
+  console.log('Fill Breed List...');
   let option = document.createElement("option");
   option.value = -1;
   option.text = '';    
   breedSelect.appendChild(option);
-
-  for(let i=0 ; i< breedData.length ; i++)
+  if(breedData)
     {
-      
-      let option = document.createElement("option");
-      option.value = breedData[i].id;
-      option.text = breedData[i].name;    
-      breedSelect.appendChild(option);
-      
-      
-    } 
-    console.log("Breed Select Element:", breedSelect);
-    
+          for(let i=0 ; i< breedData.length ; i++)
+            {
+              
+              let option = document.createElement("option");
+              option.value = breedData[i].id;
+              option.text = breedData[i].name;    
+              breedSelect.appendChild(option);
+              
+              
+            } 
+            console.log("Breed Select Element:", breedSelect);
+    }
 }
+//*********************************************************/
+function updateProgress(event) {
+  console.log(event); 
+  if (event.lengthComputable) {
+      const percentCompleted = (event.loaded / event.total) * 100;
+      progressBar.style.width = `${percentCompleted}%`;
+  }
+}
+//********************************************************/
 
+async function axiosInitiation(){
+  axios.defaults.baseURL = API_BASE_URL;
+  axios.defaults.headers.common['x-api-key'] = `${API_KEY}`;
+  axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+  
+//Logging request Time
+  axios.interceptors.request.use(request => {
+    request.metadata = request.metadata || {};
+    request.metadata.startTime = new Date().getTime();
+    document.body.style.cursor = 'progress';
+    progressBar.style.width = '0%';
+    return request;
+});
 
+axios.interceptors.response.use(
+    (response) => {
+        response.config.metadata.endTime = new Date().getTime();
+        response.config.metadata.durationInMS = response.config.metadata.endTime - response.config.metadata.startTime;
 
+        console.log(`Request start time ${response.config.metadata.startTime}`);
+        console.log(`Request end time ${response.config.metadata.endTime}`);
+        console.log(`Request took ${response.config.metadata.durationInMS} milliseconds.`);
+        document.body.style.cursor = 'default';
+        progressBar.style.width = '100%';
+        
+        return response;
+    },
+    (error) => {
+        error.config.metadata.endTime = new Date().getTime();
+        error.config.metadata.durationInMS = error.config.metadata.endTime - error.config.metadata.startTime;
+
+        console.log(`Request took ${error.config.metadata.durationInMS} milliseconds.`)
+        // progressBar.style.width = '100%'; 
+        throw error;
+});
+}
 breedSelect.addEventListener("change",(event) =>{
   getAPIBreedByID(breedSelect.value).then(breed =>{
-
-  console.log(breed);
-  console.log(breed.name);
-  if(breed.length > 0){
-      createInformationDump(breed[0].name,breed[0].origin,breed[0].description);
-      addCarousel(breed[0].image.url,breed[0].name,breed[0].image.id);
+  
+  if(breed){
+    console.log(breed.name);
+      createInformationDump(breed.name,breed.origin,breed.description);
   }
   else
   {
     alert("There is no information about " + breedSelect.value + ".");
   }
+})
+getAPIBreedImagesByID(breedSelect.value).then(breedImages =>{
+  console.log(breedImages);
+  Carousel.clear();
+  for(let i = 0; i < breedImages.length; i++){
+    //console.log(breedImages[i].id);
+    addCarousel(breedImages[i].url,'',breedImages[i].id);
+  }  
   
 })
 
@@ -70,58 +128,53 @@ breedSelect.addEventListener("change",(event) =>{
 
 
 async function getAPIBreedsList(){
-  
-  const url = `https://api.thecatapi.com/v1/breeds?limit=100&api_key=${API_KEY}`;
-  console.log(url);
-  try{
+  try {
+    const res = await axios.get(
+      `/breeds?limit=100`);
+    const data = res.data;
+    console.log(data);
+    return data;
+  } catch (err) {
+    console.log('bad Request');
+    return [];
+  }
 
-        const response = await fetch(url);
-        if(response.ok === true)
-          {
-            const data = await response.json();             
-            return data;
-          }
-          else
-          {
-            console.log("Error: ", response.status);
-            return;
-          }
-
-          }
-          catch(err){
-            console.log(err);
-
- }
  }
 
  async function getAPIBreedByID(breedID){
   console.log(breedID);
-  const url = `https://api.thecatapi.com/v1/breeds/search?q=${breedID}&attach_image=1&api_key=${API_KEY}`;
-  console.log("breed => " + url);
-  try{
-
-        const response = await fetch(url);
-        if(response.ok === true)
-          {
-            const data = await response.json();             
-            console.log('breed = > ' + data);
-            return data;
-          }
-          else
-          {
-            console.log("Error: ", response.status);
-            return;
-          }
-
-          }
-          catch(err){
-            console.log(err);
-
+try {
+  const res = await axios.get(
+    `/breeds/${breedID}`);
+  const data = res.data;
+  console.log('AXIOS DATA =>'+ data);
+  return data;
+} catch (err) {
+  console.log('bad Request');
+  return [];
+}
  }
+
+ async function getAPIBreedImagesByID(breedID){
+  console.log(breedID);
+
+try {
+  const res = await axios.get(
+    `/images/search?limit=3&size=small&breed_ids=${breedID}`,{
+      onDownloadProgress: updateProgress,
+  });
+    
+  const data = res.data;
+  console.log('AXIOS DATA =>'+ data);
+  return data;
+} catch (err) {
+  console.log('bad Request');
+  return [];
+}
  }
 
  function addCarousel(imgSrc, imgAlt, imgId){
-  Carousel.clear();
+  
       let carouselItem = Carousel.createCarouselItem(imgSrc, imgAlt, imgId);
       console.log(carouselItem);
       let newCarousel = Carousel.appendCarousel(carouselItem);
@@ -149,6 +202,55 @@ function createInformationDump(name, origin, desc){
   breedDescriptionTxt.classList.add("breedDescription");
   breedDescriptionTxt.textContent = `Description: ${desc}`;
   infoDump.appendChild(breedDescriptionTxt);
+}
+
+getFavouritesBtn.addEventListener("click",()=> { 
+  const breedData = getFavoritesBtn();
+  console.log('Favorite Breed' + breedData);
+  //const x =  fillBreedList()
+}
+);
+
+
+async function addToFavorite(imageID,subID){
+  
+  try {
+        const rawBody = 
+        {
+          image_id: imageID,
+          sub_id: subID
+        };
+
+        console.log('Adding to favorite: ' + imageID);
+        const response = await axios.post("/favourites",rawBody);
+        console.log('Added to favourite:', response.data);
+      } 
+      catch (err) 
+      {
+                console.error('Error adding to favourite:',  err.message);
+      }
+}
+ 
+
+async function getFavoritesBtn(){
+  console.log('Get Favorites Images');
+  try {
+    //axiosInitiation();
+    const res = await axios.get(`/favourites`,
+       {headers :{
+                    'Content-Type': 'application/json',
+                    'x-api-key': API_KEY
+                  }
+
+      }
+    );
+    const data = res.data;
+    console.log(data);
+    return data;
+  } catch (err) {
+    console.log('bad Request');
+    return [];
+  }
 }
 /**
  * 1. Create an async function "initialLoad" that does the following:
@@ -227,6 +329,8 @@ function createInformationDump(name, origin, desc){
  */
 export async function favourite(imgId) {
   // your code here
+  addToFavorite(imgId,"mhobby-00109");
+  // alert('Your favourite ' + imgId );
 }
 
 /**

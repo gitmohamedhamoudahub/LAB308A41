@@ -1,3 +1,7 @@
+// https://api.thecatapi.com/v1/images/search?breed_ids=${breedId}&limit=6
+//https://api.thecatapi.com/v1/breeds/abob
+
+
 import * as Carousel from "./Carousel.js";
 //import axios from "axios";
 
