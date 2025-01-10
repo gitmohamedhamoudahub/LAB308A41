@@ -103,18 +103,27 @@ axios.interceptors.response.use(
         throw error;
 });
 }
-breedSelect.addEventListener("change",(event) =>{
-  getAPIBreedByID(breedSelect.value).then(breed =>{
-  
-  if(breed){
-    console.log(breed.name);
-      createInformationDump(breed.name,breed.origin,breed.description);
-  }
-  else
+breedSelect.addEventListener("change",(event) =>
   {
-    alert("There is no information about " + breedSelect.value + ".");
-  }
-})
+    if(breedSelect.value == -1) {clearPageData(); return;} 
+  console.log(breedSelect.value);
+    
+    getAPIBreedByID(breedSelect.value).then(breed =>
+      {
+        if(breed){
+          console.log(breed.name);
+            createInformationDump(breed.name,breed.origin,breed.description);
+        }
+        else
+        {
+          alert("There is no information about " + breedSelect.value + ".");
+        }
+
+});
+function clearPageData(){
+  Carousel.clear();
+  infoDump.innerHTML = '';
+}
 
 getAPIBreedImagesByID(breedSelect.value).then(breedImages =>{
   console.log(breedImages);
@@ -226,49 +235,85 @@ function createInformationDump(name, origin, desc){
 }
 
 getFavouritesBtn.addEventListener("click",()=> { 
-  const breedData = getFavoritesBtn();
-  console.log('Favorite Breed' + breedData);
+  infoDump.innerHTML = '';
+  fillFavoritImages();
 }
 );
-
+async function fillFavoritImages()
+{
+  
+   getFavoritesBtn().then(breedFavoriteImages =>{
+  console.log('Favorite Images ===> ' + breedFavoriteImages.length); 
+  Carousel.clear();
+  for(let i = 0; i < breedFavoriteImages.length; i++){
+    console.log(breedFavoriteImages[i].image);
+    addCarousel(breedFavoriteImages[i].image.url,'',breedFavoriteImages[i].image.id);
+  }  
+  Carousel.start();
+});
+}
 
 async function addToFavorite(imageID,subID){
   
   try {
-        const rawBody = 
-        {
-          image_id: imageID,
-          sub_id: subID
-        };
+    const response = await axios.get(`/favourites`, {
+        params: {
+            // sub_id: subID,
+            image_id: imageID,
+        },
+        headers: {
+            "x-api-key": API_KEY,
+        },
+    });
 
-        console.log('Adding to favorite: ' + imageID);
-        const response = await axios.post("/favourites",rawBody);
-        console.log('Added to favourite:', response.data);
-      } 
-      catch (err) 
-      {
-                console.error('Error adding to favourite:',  err.message);
-      }
+    const favourites = response.data;
+    console.log('Favoites ' + favourites);
+    if (favourites.length > 0) {
+        const favouriteId = favourites[0].id;
+        console.log(`Removing favorite imageId= ${imageID} => favourite ID= ${favouriteId}`);
+        const deleteResponse = await axios.delete(`/favourites/${favouriteId}`, {
+            headers: {
+                "x-api-key": API_KEY,
+            },
+        });
+        console.log("Removed favorite image:", deleteResponse.data);
+    } else {
+        
+        const rawBody = {
+            image_id: imageID,
+            sub_id: subID,
+        };
+        console.log(`Adding favorite image ${imageID}`);
+        const response = await axios.post(`/favourites`, rawBody, {
+            headers: {
+                "x-api-key": API_KEY,
+                "Content-Type": "application/json",
+            },
+        });
+        console.log("Added to favorite:", response.data);
+    }
+} catch (err) {
+    console.error("Error toggling favorite:", err.response ? err.response.data : err.message);
+}
 }
  
 
 async function getFavoritesBtn(){
   console.log('Get Favorites Images');
   try {
-    const res = await axios.get(`/favourites`,
-       {headers :{
-                    'Content-Type': 'application/json',
-                    'x-api-key': API_KEY
-                  }
-      }
-    );
-    const data = res.data;
-    console.log(data);
-    return data;
-  } catch (err) {
-    console.log('bad Request');
-    return [];
-  }
+      const res = await axios.get(`/favourites`, {     
+      headers: {
+          "x-api-key": API_KEY,
+      },
+  });
+ 
+  const data = await res.data;
+  console.log('Favorite images ==>'+ data[0].image.url);
+  return data;
+} catch (err) {
+  console.log('Error getting favorite images');
+  return [];
+}
 }
 /**
  * 1. Create an async function "initialLoad" that does the following:
