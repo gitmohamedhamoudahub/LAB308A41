@@ -29,6 +29,7 @@ window.addEventListener("load", initialLoad);
 
 async function initialLoad(){
   console.log("Axios initialLoad...");  
+  progressBar.style.width = '0%';
   axiosInitiation();  
   const breedData = await getAPIBreedsList();
   fillBreedList(breedData);
@@ -120,20 +121,35 @@ getAPIBreedImagesByID(breedSelect.value).then(breedImages =>{
     //console.log(breedImages[i].id);
     addCarousel(breedImages[i].url,'',breedImages[i].id);
   }  
+  Carousel.start();
   
 })
 
 });
 
-
+function resetProgressBarAsync() {
+  return new Promise(resolve => {
+      setTimeout(() => {
+          
+          if (progressBar) {
+              progressBar.style.width = '0%';
+          }
+          resolve();
+      }, 1000);
+  });
+}
 
 async function getAPIBreedsList(){
   try {
     const res = await axios.get(
-      `/breeds?limit=100`);
+      `/breeds?limit=100`,{
+        onDownloadProgress: updateProgress,
+    });
     const data = res.data;
     console.log(data);
+    await resetProgressBarAsync();
     return data;
+    
   } catch (err) {
     console.log('bad Request');
     return [];
@@ -145,9 +161,12 @@ async function getAPIBreedsList(){
   console.log(breedID);
 try {
   const res = await axios.get(
-    `/breeds/${breedID}`);
+    `/breeds/${breedID}`,{
+      onDownloadProgress: updateProgress,
+  });
   const data = res.data;
   console.log('AXIOS DATA =>'+ data);
+  await resetProgressBarAsync();
   return data;
 } catch (err) {
   console.log('bad Request');
@@ -160,7 +179,7 @@ try {
 
 try {
   const res = await axios.get(
-    `/images/search?limit=3&size=small&breed_ids=${breedID}`,{
+    `/images/search?limit=6&size=small&breed_ids=${breedID}`,{
       onDownloadProgress: updateProgress,
   });
     
