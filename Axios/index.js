@@ -159,6 +159,7 @@ async function getAPIBreedsList(){
     const data = res.data;
     console.log(data);
     await resetProgressBarAsync();
+    progressBar.style.width = '0%';
     return data;
     
   } catch (err) {
@@ -178,6 +179,7 @@ try {
   const data = res.data;
   console.log('AXIOS DATA =>'+ data);
   await resetProgressBarAsync();
+  progressBar.style.width = '0%';
   return data;
 } catch (err) {
   console.log('bad Request');
@@ -196,6 +198,7 @@ try {
     
   const data = res.data;
   console.log('AXIOS DATA =>'+ data);
+  progressBar.style.width = '0%';
   return data;
 } catch (err) {
   console.log('bad Request');
@@ -290,6 +293,7 @@ async function addToFavorite(imageID,subID){
                 "Content-Type": "application/json",
             },
         });
+        // progressBar.style.width = '0%';
         console.log("Added to favorite:", response.data);
     }
 } catch (err) {
@@ -301,14 +305,16 @@ async function addToFavorite(imageID,subID){
 async function getFavoritesBtn(){
   console.log('Get Favorites Images');
   try {
-      const res = await axios.get(`/favourites`, {     
+    const res = await axios.get(`/favourites`, {
       headers: {
-          "x-api-key": API_KEY,
+        "x-api-key": API_KEY,
       },
-  });
- 
+      onDownloadProgress: updateProgress, 
+    });
+
   const data = await res.data;
   console.log('Favorite images ==>'+ data[0].image.url);
+  
   return data;
 } catch (err) {
   console.log('Error getting favorite images');
