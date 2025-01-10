@@ -114,6 +114,7 @@ breedSelect.addEventListener("change",(event) =>{
     alert("There is no information about " + breedSelect.value + ".");
   }
 })
+
 getAPIBreedImagesByID(breedSelect.value).then(breedImages =>{
   console.log(breedImages);
   Carousel.clear();

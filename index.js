@@ -24,6 +24,8 @@ const getFavouritesBtn = document.getElementById("getFavouritesBtn");
 
 // Step 0: Store your API key here for reference and easy access.
 const API_KEY = "live_q8HmQ0SZvNU87ZUOLH7qpCZUaeuvuugpwoDE6FOWYId8ivtt2FoSlFClXrQzT1XB";
+const API_BASE_URL = 'https://api.thecatapi.com/v1';
+
 //***************************************************************** */
 
 window.addEventListener("load", initialLoad);
@@ -54,28 +56,52 @@ async function initialLoad(){
 
 
 breedSelect.addEventListener("change",(event) =>{
-  getAPIBreedByID(breedSelect.value).then(breed =>{
-
-  console.log(breed);
-  console.log(breed.name);
-  if(breed.length > 0){
-      createInformationDump(breed[0].name,breed[0].origin,breed[0].description);
-      addCarousel(breed[0].image.url,breed[0].name,breed[0].image.id);
-  }
-  else
+ console.log('Selected '+ breedSelect.value);
+  if(breedSelect.value != -1)
   {
-    alert("There is no information about " + breedSelect.value + ".");
-  }
-  
-})
+  getAPIBreedByID(breedSelect.value).then(breed =>{
+   
+   if(breed){
+     console.log(breed.name);
+       createInformationDump(breed.name,breed.origin,breed.description);
+   }
+   else
+   {
+     alert("There is no information about " + breedSelect.value + ".");
+   }
+ })
+ 
+ getAPIBreedImagesByID(breedSelect.value).then(breedImages =>{
+   console.log('Image Get =>' + breedImages.length);
+   Carousel.clear();
 
-});
+   for(let i = 0; i < breedImages.length; i++){
+     console.log(breedImages[i].id);
+     addCarousel(breedImages[i].url,'',breedImages[i].id);
+   }  
+   Carousel.start();
+   
+ })
+}
+ });
+
+// getAPIBreedImagesByID(breedSelect.value).then(breedImages =>{
+//   console.log(breedImages);
+//   Carousel.clear();
+//   for(let i = 0; i < breedImages.length; i++){
+//     //console.log(breedImages[i].id);
+//     addCarousel(breedImages[i].url,'',breedImages[i].id);
+//   }  
+//   Carousel.start();
+  
+// })
+
 
 
 
 async function getAPIBreedsList(){
   
-  const url = `https://api.thecatapi.com/v1/breeds?limit=100&api_key=${API_KEY}`;
+  const url = `${API_BASE_URL}/breeds?limit=100&api_key=${API_KEY}`;
   console.log(url);
   try{
 
@@ -98,9 +124,37 @@ async function getAPIBreedsList(){
  }
  }
 
+//  
+
+ async function getAPIBreedImagesByID(breedID){
+  console.log('getAPIBreedImagesByID for => ' + breedID);
+  const url = `${API_BASE_URL}/images/search?limit=6&size=small&breed_ids=${breedID}&api_key=${API_KEY}`;
+  console.log("breed => " + url);
+  
+  try{
+    const response = await fetch(url);
+    if(response.ok === true)
+      {
+        const data = await response.json();             
+        console.log('breed = > ' + data);
+        return data;
+      }
+      else
+      {
+        console.log("Error: ", response.status);
+        return;
+      }
+
+      }
+      catch(err){
+        console.log(err);
+
+  }
+ }
+
  async function getAPIBreedByID(breedID){
   console.log(breedID);
-  const url = `https://api.thecatapi.com/v1/breeds/search?q=${breedID}&attach_image=1&api_key=${API_KEY}`;
+  const url = `${API_BASE_URL}/breeds/${breedID}?api_key=${API_KEY}`;
   console.log("breed => " + url);
   try{
 
@@ -125,7 +179,7 @@ async function getAPIBreedsList(){
  }
 
  function addCarousel(imgSrc, imgAlt, imgId){
-  Carousel.clear();
+  // Carousel.clear();
       let carouselItem = Carousel.createCarouselItem(imgSrc, imgAlt, imgId);
       console.log(carouselItem);
       let newCarousel = Carousel.appendCarousel(carouselItem);
